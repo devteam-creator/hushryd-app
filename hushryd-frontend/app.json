@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "HushRyd",
+    "slug": "hushryd",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "hushryd",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#00AFF5"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hushryd.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#00AFF5"
+      },
+      "package": "com.hushryd.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "name": "HushRyd - Travel Made Simple",
+      "shortName": "HushRyd",
+      "description": "Your pick of rides at low prices. Travel across AP & Telangana by carpool or bus.",
+      "startUrl": "/",
+      "display": "standalone",
+      "backgroundColor": "#00AFF5",
+      "themeColor": "#00AFF5",
+      "orientation": "portrait"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#1DA1F2",
+          "mode": "production"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

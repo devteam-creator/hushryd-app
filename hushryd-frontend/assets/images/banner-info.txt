@@ -1,0 +1,6 @@
+
+// This is a placeholder for the banner image
+// Replace this file with your actual banner image
+// Recommended dimensions: 1200x400 pixels
+// Supported formats: PNG, JPG
+// Location: assets/images/banner.png

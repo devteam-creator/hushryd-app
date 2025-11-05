@@ -1,0 +1,27 @@
+{
+  "name": "HushRyd - Travel Made Simple",
+  "short_name": "HushRyd",
+  "description": "Your pick of rides at low prices. Travel across AP & Telangana by carpool or bus.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#00AFF5",
+  "theme_color": "#00AFF5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "transportation", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr"
+}
