@@ -63,10 +63,13 @@ jobs:
           cache-dependency-path: hushryd-backend/package-lock.json
       
       - name: Install dependencies
-        run: npm ci
+        run: |
+          cd hushryd-backend
+          npm ci
       
       - name: Setup test environment
         run: |
+          cd hushryd-backend
           cat > .env << EOF
           DB_HOST=localhost
           DB_PORT=3306
@@ -93,8 +96,9 @@ jobs:
       
       - name: Test API server
         run: |
+          cd hushryd-backend
           npm start &
-          sleep 10
+          sleep 15
           curl -f http://localhost:3000/health || exit 1
 
   android-build:
