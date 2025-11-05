@@ -90,16 +90,55 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y default-mysql-client
-          while ! mysqladmin ping -h 127.0.0.1 -u root -ptest_password --silent; do
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..60}; do
+            if mysqladmin ping -h 127.0.0.1 -u root -ptest_password --silent; then
+              echo "MySQL is ready!"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "MySQL failed to start"
+              exit 1
+            fi
             sleep 1
           done
+          
+          # Ensure database exists
+          mysql -h 127.0.0.1 -u root -ptest_password -e "CREATE DATABASE IF NOT EXISTS hushryd_test;" || true
+          echo "Database ready"
       
       - name: Test API server
         run: |
           cd hushryd-backend
-          npm start &
-          sleep 15
-          curl -f http://localhost:3000/health || exit 1
+          # Start server in background with logging
+          npm start > server.log 2>&1 &
+          SERVER_PID=$!
+          echo "Server PID: $SERVER_PID"
+          
+          # Wait for server to start (with retries)
+          echo "Waiting for server to start..."
+          for i in {1..30}; do
+            if curl -f http://localhost:3000/health > /dev/null 2>&1; then
+              echo "Server is ready!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Server failed to start. Last 50 lines of logs:"
+              tail -50 server.log || cat server.log
+              echo "Checking if process is running:"
+              ps aux | grep node || true
+              exit 1
+            fi
+            sleep 2
+          done
+          
+          # Test health endpoint
+          curl -f http://localhost:3000/health
+          echo ""
+          echo "Health check passed!"
+          
+          # Cleanup
+          kill $SERVER_PID 2>/dev/null || true
 
   android-build:
     name: Build Android APK
