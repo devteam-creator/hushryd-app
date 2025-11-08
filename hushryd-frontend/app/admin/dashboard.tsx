@@ -71,6 +71,13 @@ export default function AdminDashboardScreen() {
       color: '#84cc16',
     },
     {
+      title: 'Session History',
+      description: 'View all user session history',
+      icon: '📱',
+      route: '/admin/sessions',
+      color: '#06b6d4',
+    },
+    {
       title: 'Settings',
       description: 'System and account settings',
       icon: '⚙️',

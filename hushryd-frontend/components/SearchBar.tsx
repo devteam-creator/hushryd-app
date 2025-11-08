@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { Modal, Platform, Image as RNImage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Images from '../assets/images';
+import React, { useEffect, useState } from 'react';
+import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Colors from '../constants/Colors';
 import { BorderRadius, FontSizes, Shadows, Spacing } from '../constants/Design';
 import { SearchParams } from '../types/models';
@@ -9,6 +8,8 @@ import DatePicker from './DatePicker';
 import LocationAutocomplete from './LocationAutocomplete';
 import TimeSlotDropdown from './TimeSlotDropdown';
 import { useColorScheme } from './useColorScheme';
+
+const IS_WEB = Platform.OS === 'web';
 
 interface SearchBarProps {
   onSearch: (params: SearchParams) => void;
@@ -51,7 +52,7 @@ export default function SearchBar({ onSearch, initialValues, compact = false }: 
 
   const handleReset = () => {
     console.log('Resetting search criteria');
-    setFrom('');
+    setFrom(initialValues?.from || '');
     setTo('');
     setDate(getTodayDate());
     setSelectedDate(new Date());
@@ -125,12 +126,14 @@ export default function SearchBar({ onSearch, initialValues, compact = false }: 
             </View>
 
             {/* Swap Button */}
-            <TouchableOpacity 
-              style={[styles.swapButton, { backgroundColor: colors.primary }]} 
-              onPress={swapLocations}
-            >
-              <Text style={styles.swapIcon}>⇅</Text>
-            </TouchableOpacity>
+            {IS_WEB && (
+              <TouchableOpacity 
+                style={[styles.swapButton, { backgroundColor: colors.primary }]} 
+                onPress={swapLocations}
+              >
+                <Text style={styles.swapIcon}>⇅</Text>
+              </TouchableOpacity>
+            )}
 
             {/* To Location */}
             <View style={styles.inputWrapper}>
@@ -138,7 +141,7 @@ export default function SearchBar({ onSearch, initialValues, compact = false }: 
                 placeholder="To"
                 value={to}
                 onLocationSelect={setTo}
-                icon={<Text style={styles.inputIcon}>🎯</Text>}
+                icon={IS_WEB ? <Text style={styles.inputIcon}>🎯</Text> : undefined}
               />
             </View>
 
@@ -321,6 +324,41 @@ function getTodayDate(): string {
   return today.toISOString().split('T')[0];
 }
 
+async function reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+      {
+        headers: {
+          'User-Agent': 'HushRyd-App/1.0',
+        },
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    if (data?.display_name) {
+      return data.display_name;
+    }
+
+    if (data?.address) {
+      const { road, neighbourhood, suburb, city, town } = data.address;
+      const parts = [road, neighbourhood, suburb, city || town].filter(Boolean);
+      if (parts.length > 0) {
+        return parts.join(', ');
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Reverse geocode fetch error:', error);
+    return null;
+  }
+}
+
 const styles = StyleSheet.create({
   container: {
     padding: Spacing.lg,
@@ -347,7 +385,7 @@ const styles = StyleSheet.create({
   contentOverlay: {
     position: 'relative',
     zIndex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: IS_WEB ? 'rgba(255, 255, 255, 0.85)' : '#FFFFFF',
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
   },
@@ -356,24 +394,24 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   firstRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: IS_WEB ? 'row' : 'column',
+    alignItems: IS_WEB ? 'flex-start' : 'stretch',
     gap: Spacing.sm,
     flexWrap: 'nowrap',
     zIndex: 200,
   },
   secondRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: IS_WEB ? 'row' : 'column',
+    alignItems: IS_WEB ? 'center' : 'stretch',
     gap: Spacing.md,
     flexWrap: 'nowrap',
   },
   inputWrapper: {
-    width: 250,
+    width: IS_WEB ? 250 : '100%',
     position: 'relative',
   },
   dateWrapper: {
-    width: 250,
+    width: IS_WEB ? 250 : '100%',
     position: 'relative',
     zIndex: 50,
   },
@@ -384,7 +422,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.small,
-    marginHorizontal: Spacing.xs,
+    marginHorizontal: IS_WEB ? Spacing.xs : 0,
+    marginVertical: IS_WEB ? 0 : Spacing.xs,
+    alignSelf: IS_WEB ? 'center' : 'flex-end',
   },
   swapIcon: {
     fontSize: 16,
@@ -395,7 +435,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   passengerWrapper: {
-    width: 250,
+    width: IS_WEB ? 250 : '100%',
   },
   passengerControl: {
     flexDirection: 'row',
@@ -436,6 +476,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.xs,
+    ...(IS_WEB ? {} : { justifyContent: 'space-between' }),
   },
   timeslotButton: {
     flexDirection: 'column',
@@ -446,7 +487,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     minHeight: 52,
-    minWidth: 80,
+    minWidth: IS_WEB ? 80 : undefined,
+    ...(IS_WEB ? {} : { width: '31%' }),
   },
   timeslotButtonActive: {
     borderWidth: 2,
@@ -461,12 +503,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   resetButton: {
-    minWidth: 120,
     minHeight: 52,
+    ...(IS_WEB
+      ? { minWidth: 120 }
+      : { width: '100%', marginBottom: Spacing.sm }),
   },
   searchButton: {
-    minWidth: 120,
     minHeight: 52,
+    ...(IS_WEB
+      ? { minWidth: 120 }
+      : { width: '100%', marginTop: Spacing.sm }),
   },
   dateInput: {
     flexDirection: 'row',
@@ -531,15 +577,17 @@ const styles = StyleSheet.create({
     height: 300,
   },
   calendarFooter: {
-    flexDirection: 'row',
+    flexDirection: IS_WEB ? 'row' : 'column',
     gap: Spacing.md,
     marginTop: Spacing.lg,
   },
   cancelButton: {
     flex: 1,
+    ...(IS_WEB ? {} : { width: '100%' }),
   },
   selectButton: {
     flex: 1,
+    ...(IS_WEB ? {} : { width: '100%' }),
   },
   webDatePicker: {
     alignItems: 'center',

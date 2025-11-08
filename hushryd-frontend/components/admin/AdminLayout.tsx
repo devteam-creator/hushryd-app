@@ -42,6 +42,7 @@ export default function AdminLayout({ children, title, currentPage = 'dashboard'
       { id: 'tickets', title: 'Support Tickets', icon: '🎫', route: '/admin/tickets' },
       { id: 'support', title: 'Support', icon: '🆘', route: '/admin/support' },
       { id: 'sos', title: 'SOS Management', icon: '🚨', route: '/admin/sos' },
+      { id: 'sessions', title: 'Session History', icon: '📱', route: '/admin/sessions' },
     { id: 'settings', title: 'Settings', icon: '⚙️', route: '/admin/settings' },
     { id: 'permissions', title: 'Role Permissions', icon: '🔐', route: '/admin/permissions' },
     { id: 'database', title: 'Database Management', icon: '🗄️', route: '/admin/database' },

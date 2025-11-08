@@ -27,6 +27,7 @@ export default function AdminLayout() {
       <Stack.Screen name="permissions" />
       <Stack.Screen name="database" />
       <Stack.Screen name="migrations" />
+      <Stack.Screen name="sessions" />
     </Stack>
   );
 }

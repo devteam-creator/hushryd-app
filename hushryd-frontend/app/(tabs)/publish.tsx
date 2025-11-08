@@ -2,13 +2,16 @@ import Button from '@/components/Button';
 import Input from '@/components/Input';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors, { CURRENCY_SYMBOL } from '@/constants/Colors';
+import { BorderRadius, FontSizes, Shadows, Spacing } from '@/constants/Design';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function PublishRideScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const isWeb = Platform.OS === 'web';
 
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -47,12 +50,50 @@ export default function PublishRideScreen() {
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>Publish a Ride</Text>
-        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-          Share your journey and help others travel
-        </Text>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={!isWeb ? mobileStyles.content : undefined}
+    >
+      {!isWeb && (
+        <LinearGradient
+          colors={[colors.primary, '#FFCA28']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={mobileStyles.header}
+        >
+          <Text style={mobileStyles.headerTitle}>Publish a ride</Text>
+          <Text style={mobileStyles.headerSubtitle}>
+            Go Rapido-style with instant matches, smart fares and verified passengers.
+          </Text>
+          <View style={mobileStyles.heroPills}>
+            <View style={mobileStyles.heroPill}>
+              <Text style={mobileStyles.heroPillText}>⚡ Go live in 2 mins</Text>
+            </View>
+            <View style={mobileStyles.heroPill}>
+              <Text style={mobileStyles.heroPillText}>💸 Keep up to 80%</Text>
+            </View>
+            <View style={mobileStyles.heroPill}>
+              <Text style={mobileStyles.heroPillText}>🛡️ Verified riders</Text>
+            </View>
+          </View>
+        </LinearGradient>
+      )}
+
+      <View
+        style={[
+          styles.content,
+          !isWeb && mobileStyles.formCard,
+          !isWeb && { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        {isWeb && (
+          <>
+            <Text style={[styles.title, { color: colors.text }]}>Publish a Ride</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              Share your journey and help others travel
+            </Text>
+          </>
+        )}
 
         <View style={styles.form}>
           <Input
@@ -115,15 +156,26 @@ export default function PublishRideScreen() {
             style={styles.textArea}
           />
 
-          <Button title="Publish Ride" onPress={handlePublish} size="large" style={styles.publishButton} />
+          <Button
+            title="Publish Ride"
+            onPress={handlePublish}
+            size="large"
+            style={[styles.publishButton, !isWeb && mobileStyles.publishButton]}
+          />
         </View>
+      </View>
 
-        <View style={[styles.infoBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={styles.infoIcon}>💡</Text>
-          <Text style={[styles.infoText, { color: colors.textSecondary }]}>
-            Make sure to arrive on time and respect your passengers. Good reviews lead to more bookings!
-          </Text>
-        </View>
+      <View
+        style={[
+          styles.infoBox,
+          { backgroundColor: colors.card, borderColor: colors.border },
+          !isWeb && mobileStyles.infoCard,
+        ]}
+      >
+        <Text style={styles.infoIcon}>💡</Text>
+        <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+          Make sure to arrive on time and respect your passengers. Good reviews lead to more bookings!
+        </Text>
       </View>
     </ScrollView>
   );
@@ -172,6 +224,68 @@ const styles = StyleSheet.create({
   infoText: {
     flex: 1,
     fontSize: 14,
+  },
+});
+
+const mobileStyles = StyleSheet.create({
+  content: {
+    paddingBottom: Spacing.huge,
+  },
+  header: {
+    paddingTop: Spacing.huge,
+    paddingBottom: Spacing.xxxl,
+    paddingHorizontal: Spacing.xl,
+    borderBottomLeftRadius: BorderRadius.xl,
+    borderBottomRightRadius: BorderRadius.xl,
+    marginBottom: Spacing.xxxl,
+  },
+  headerTitle: {
+    fontSize: FontSizes.xxxl,
+    fontWeight: '800',
+    color: '#1A1A1A',
+  },
+  headerSubtitle: {
+    marginTop: Spacing.sm,
+    fontSize: FontSizes.sm,
+    lineHeight: 20,
+    color: '#3A3A3A',
+    maxWidth: 320,
+  },
+  heroPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginTop: Spacing.lg,
+  },
+  heroPill: {
+    backgroundColor: 'rgba(26, 26, 26, 0.12)',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.round,
+  },
+  heroPillText: {
+    fontSize: FontSizes.sm,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  formCard: {
+    marginHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    ...Shadows.large,
+  },
+  publishButton: {
+    marginTop: Spacing.xl,
+    width: '100%',
+  },
+  infoCard: {
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    ...Shadows.medium,
   },
 });
 

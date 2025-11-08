@@ -44,6 +44,10 @@ export default function LocationAutocomplete({
   const [loading, setLoading] = useState(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  React.useEffect(() => {
+    setSearchText(value);
+  }, [value]);
+
   const fetchPredictions = async (input: string) => {
     if (input.length < 1) {
       setPredictions([]);
@@ -272,7 +276,7 @@ export default function LocationAutocomplete({
 
   const handleTextChange = (text: string) => {
     setSearchText(text);
-    
+
     // Clear any pending debounce timers
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
@@ -282,7 +286,7 @@ export default function LocationAutocomplete({
     if (text.length > 0) {
       setShowDropdown(true);
       debounceTimer.current = setTimeout(() => {
-        fetchPredictions(text);
+            fetchPredictions(text);
       }, 300);
     } else {
       setShowDropdown(false);
@@ -291,9 +295,8 @@ export default function LocationAutocomplete({
   };
 
   const handleSelectLocation = (prediction: Prediction) => {
-    const selectedCity = prediction.structured_formatting.main_text;
-    setSearchText(selectedCity);
-    onLocationSelect(selectedCity);
+    setSearchText('');
+    onLocationSelect(prediction.description);
     setPredictions([]);
     setShowDropdown(false);
     

@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Colors from '../constants/Colors';
 import { BorderRadius, FontSizes, Shadows, Spacing } from '../constants/Design';
 import { useAuth } from '../contexts/AuthContext';
@@ -25,6 +25,7 @@ export default function SideMenu({ isVisible, onClose }: SideMenuProps) {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { logout } = useAuth();
+  const isWeb = Platform.OS === 'web';
 
   const menuItems: MenuItem[] = [
     // Top Section - Main Navigation
@@ -110,9 +111,25 @@ export default function SideMenu({ isVisible, onClose }: SideMenuProps) {
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, !isWeb && styles.overlayMobile]}>
+        {!isWeb && (
+          <View style={[styles.sideMenu, { backgroundColor: colors.background }]}>
+            {renderMenuContent(colors)}
+          </View>
+        )}
         <Pressable style={styles.backdrop} onPress={onClose} />
-        <View style={[styles.sideMenu, { backgroundColor: colors.background }]}>
+        {isWeb && (
+          <View style={[styles.sideMenu, { backgroundColor: colors.background }]}>
+            {renderMenuContent(colors)}
+          </View>
+        )}
+      </View>
+    </Modal>
+  );
+
+  function renderMenuContent(colors: typeof Colors.light) {
+    return (
+      <>
         {/* Header */}
         <LinearGradient
           colors={['#32CD32', '#228B22', '#1E7A1E']}
@@ -164,10 +181,9 @@ export default function SideMenu({ isVisible, onClose }: SideMenuProps) {
             HushRyd v1.0.0
           </Text>
         </View>
-      </View>
-    </View>
-    </Modal>
-  );
+      </>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -179,6 +195,9 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 1000,
     flexDirection: 'row',
+  },
+  overlayMobile: {
+    flexDirection: 'row-reverse',
   },
   backdrop: {
     flex: 1,

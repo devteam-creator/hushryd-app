@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -33,6 +34,7 @@ interface UserProfile {
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const isWeb = Platform.OS === 'web';
   const [showNotificationSettings, setShowNotificationSettings] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -277,32 +279,66 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Profile Header with Gradient */}
-      <LinearGradient colors={['#00D4FF', '#00AFF5', '#0090D9']} style={styles.header}>
+      <LinearGradient
+        colors={isWeb ? ['#00D4FF', '#00AFF5', '#0090D9'] : [colors.primary, '#FFCA28', '#FFC107']}
+        style={styles.header}
+      >
         <Text style={styles.avatar}>{userProfile.avatar || '👤'}</Text>
-        <Text style={styles.name}>{fullName}</Text>
-        <View style={styles.roleBadge}>
-          <Text style={styles.roleBadgeText}>
+        <Text style={[styles.name, !isWeb && { color: colors.secondary }]}>{fullName}</Text>
+        <View
+          style={[
+            styles.roleBadge,
+            !isWeb && { backgroundColor: 'rgba(26, 26, 26, 0.15)' },
+          ]}
+        >
+          <Text
+            style={[
+              styles.roleBadgeText,
+              !isWeb && { color: colors.secondary },
+            ]}
+          >
             {userProfile.role === 'driver' ? '🚗 Driver' : userProfile.role === 'customer' ? '🚙 Customer' : '🎫 Passenger'}
           </Text>
         </View>
         {userProfile.isVerified && (
-          <View style={styles.verifiedBadge}>
-            <Text style={styles.verifiedText}>✓ Verified</Text>
+          <View
+            style={[
+              styles.verifiedBadge,
+              !isWeb && { backgroundColor: 'rgba(26, 26, 26, 0.15)' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.verifiedText,
+                !isWeb && { color: colors.secondary },
+              ]}
+            >
+              ✓ Verified
+            </Text>
           </View>
         )}
       </LinearGradient>
 
       {/* Stats Card */}
-      <View style={[styles.statsCard, { backgroundColor: colors.card }]}>
+      <View
+        style={[
+          styles.statsCard,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+            borderWidth: 1,
+          },
+        ]}
+      >
         <View style={styles.stat}>
-          <Text style={[styles.statValue, { color: colors.primary }]}>
+          <Text style={[styles.statValue, { color: isWeb ? colors.primary : colors.secondary }]}>
             📋 {bookingCount}
           </Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Bookings</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
         <View style={styles.stat}>
-          <Text style={[styles.statValue, { color: colors.primary }]}>{complaintCount}</Text>
+          <Text style={[styles.statValue, { color: isWeb ? colors.primary : colors.secondary }]}>{complaintCount}</Text>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>Complaints</Text>
         </View>
         <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
@@ -320,10 +356,20 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Profile Information</Text>
           {!isEditing && (
             <TouchableOpacity
-              style={[styles.editButton, { backgroundColor: colors.primary }]}
+              style={[
+                styles.editButton,
+                { backgroundColor: isWeb ? colors.primary : colors.secondary },
+              ]}
               onPress={handleStartEditing}
             >
-              <Text style={styles.editButtonText}>Edit</Text>
+              <Text
+                style={[
+                  styles.editButtonText,
+                  !isWeb && { color: colors.primary },
+                ]}
+              >
+                Edit
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -431,14 +477,24 @@ export default function ProfileScreen() {
                 <Text style={[styles.cancelButtonText, { color: colors.text }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.saveButton, { backgroundColor: colors.primary }]}
+                style={[
+                  styles.saveButton,
+                  { backgroundColor: isWeb ? colors.primary : colors.secondary },
+                ]}
                 onPress={handleSaveProfile}
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="#FFFFFF" />
+                  <ActivityIndicator color={isWeb ? '#FFFFFF' : colors.primary} />
                 ) : (
-                  <Text style={styles.saveButtonText}>Save Changes</Text>
+                  <Text
+                    style={[
+                      styles.saveButtonText,
+                      !isWeb && { color: colors.primary },
+                    ]}
+                  >
+                    Save Changes
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>

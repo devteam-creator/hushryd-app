@@ -1,8 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
 import Colors from '../constants/Colors';
-import { BorderRadius, FontSizes, Shadows, Spacing } from '../constants/Design';
+import { FontSizes, Shadows, Spacing } from '../constants/Design';
 import { useColorScheme } from './useColorScheme';
 
 interface ButtonProps {
@@ -34,8 +34,17 @@ export default function Button({
   const colors = Colors[colorScheme ?? 'light'];
 
   const getGradientColors = (): readonly [string, string, ...string[]] => {
-    if (variant === 'primary') return ['#00D4FF', '#00AFF5', '#0090D9'] as const;
-    if (variant === 'secondary') return ['#0A5C8E', '#084F8D'] as const;
+    const isWeb = Platform.OS === 'web';
+    if (variant === 'primary') {
+      return isWeb
+        ? (['#00D4FF', '#00AFF5', '#0090D9'] as const)
+        : (['#32CD32', '#228B22', '#006400'] as const);
+    }
+    if (variant === 'secondary') {
+      return isWeb
+        ? (['#0A5C8E', '#084F8D', '#06428B'] as const)
+        : (['#1A1A1A', '#111111', '#000000'] as const);
+    }
     return ['transparent', 'transparent'] as const;
   };
 
@@ -43,11 +52,15 @@ export default function Button({
     styles.button,
     styles[size],
     ...(fullWidth ? [styles.fullWidth] : []),
-    ...(variant === 'outline' ? [{ 
-      borderWidth: 2, 
-      borderColor: colors.primary,
-      backgroundColor: 'transparent',
-    }] : []),
+    ...(variant === 'outline'
+      ? [
+          {
+            borderWidth: 2,
+            borderColor: colors.primary,
+            backgroundColor: 'transparent',
+          },
+        ]
+      : []),
     ...(variant === 'ghost' ? [{ 
       backgroundColor: 'transparent',
     }] : []),
@@ -118,7 +131,7 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: BorderRadius.md,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',

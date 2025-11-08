@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
@@ -44,6 +46,7 @@ export interface TransactionData {
 export class ApiService {
   private static instance: ApiService;
   private baseUrl: string;
+  private defaultTimeout: number = 30000; // 30 seconds default timeout
 
   public static getInstance(): ApiService {
     if (!ApiService.instance) {
@@ -53,8 +56,21 @@ export class ApiService {
   }
 
   constructor() {
-    // Backend API URL - update this to match your backend server
-    this.baseUrl = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
+    const isWeb = Platform.OS === 'web';
+
+    // Prefer runtime environment variable, otherwise fall back to sensible defaults per platform
+    const fallbackBaseUrl = isWeb
+      ? 'http://localhost:3000/api'
+      : 'http://10.0.2.2:3000/api';
+
+    this.baseUrl = process.env.EXPO_PUBLIC_API_URL || fallbackBaseUrl;
+
+    if (!isWeb && this.baseUrl.includes('localhost')) {
+      console.warn(
+        '[ApiService] Detected localhost base URL on a native device. ' +
+        'Consider setting EXPO_PUBLIC_API_URL to a reachable IP address (e.g. http://10.0.2.2:3000/api for Android emulator).'
+      );
+    }
   }
 
   // Generic API call method with authentication
@@ -62,9 +78,15 @@ export class ApiService {
     endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
     data?: any,
-    token?: string
+    token?: string,
+    timeout: number = this.defaultTimeout
   ): Promise<ApiResponse<T>> {
+    const controller = new AbortController();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     try {
+      timeoutId = setTimeout(() => controller.abort(), timeout);
+      
       const url = `${this.baseUrl}${endpoint}`;
       const options: RequestInit = {
         method,
@@ -72,6 +94,7 @@ export class ApiService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        signal: controller.signal,
       };
 
       // Add authorization header if token is provided
@@ -90,6 +113,12 @@ export class ApiService {
       console.log('📤 Request data:', data);
       
       const response = await fetch(url, options);
+      
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      
       const result = await response.json();
 
       // Log the response for debugging
@@ -116,7 +145,21 @@ export class ApiService {
         data: result.data || result,
       };
     } catch (error) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      
       console.error('API call failed:', error);
+      
+      // Check if error is due to timeout
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          message: `Request timeout: The server took longer than ${timeout}ms to respond`,
+          error: 'Request timeout',
+        };
+      }
+      
       return {
         success: false,
         message: 'Network error or server unavailable',
@@ -533,6 +576,39 @@ export class ApiService {
 
   public async getClaimById(token: string, claimId: string): Promise<ApiResponse> {
     return this.apiCall(`/claims/${claimId}`, 'GET', undefined, token);
+  }
+
+  // Session History API
+  public async getMySessions(token: string): Promise<ApiResponse> {
+    return this.apiCall('/sessions/my-sessions', 'GET', undefined, token);
+  }
+
+  public async getAllSessions(token: string, filters?: { userId?: string; userType?: string; page?: number; limit?: number }): Promise<ApiResponse> {
+    const params = new URLSearchParams();
+    if (filters?.userId) params.append('userId', filters.userId);
+    if (filters?.userType) params.append('userType', filters.userType);
+    if (filters?.page) params.append('page', filters.page.toString());
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    
+    const queryString = params.toString();
+    return this.apiCall(`/sessions/all${queryString ? '?' + queryString : ''}`, 'GET', undefined, token);
+  }
+
+  public async getUserSessions(token: string, userId: string, page?: number, limit?: number): Promise<ApiResponse> {
+    const params = new URLSearchParams();
+    if (page) params.append('page', page.toString());
+    if (limit) params.append('limit', limit.toString());
+    
+    const queryString = params.toString();
+    return this.apiCall(`/sessions/user/${userId}${queryString ? '?' + queryString : ''}`, 'GET', undefined, token);
+  }
+
+  public async endSession(token: string, sessionId: string): Promise<ApiResponse> {
+    return this.apiCall(`/sessions/end/${sessionId}`, 'POST', undefined, token);
+  }
+
+  public async getSessionStats(token: string): Promise<ApiResponse> {
+    return this.apiCall('/sessions/stats', 'GET', undefined, token);
   }
 
   // Mock API responses for development (when backend is not available)

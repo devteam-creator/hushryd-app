@@ -1,3 +1,4 @@
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -282,12 +283,12 @@ export default function LoginScreen() {
 
               {/* Social Login Buttons */}
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialButtonIcon}>📱</Text>
+                <FontAwesome name="phone" size={20} color="#1e293b" style={styles.socialButtonIcon} />
                 <Text style={styles.socialButtonText}>Continue with Phone</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.socialButton}>
-                <Text style={styles.socialButtonIcon}>🔍</Text>
+                <FontAwesome name="google" size={20} color="#DB4437" style={styles.socialButtonIcon} />
                 <Text style={styles.socialButtonText}>Continue with Google</Text>
               </TouchableOpacity>
 
@@ -416,7 +417,7 @@ const styles = StyleSheet.create({
     gap: Spacing.small,
   },
   socialButtonIcon: {
-    fontSize: FontSizes.large,
+    marginRight: Spacing.small,
   },
   socialButtonText: {
     fontSize: FontSizes.medium,

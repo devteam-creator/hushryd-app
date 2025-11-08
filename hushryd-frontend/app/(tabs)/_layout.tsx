@@ -1,7 +1,7 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router, Tabs } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, Text, TouchableOpacity, View } from 'react-native';
 import HushRydLogoImage from '../../components/HushRydLogoImage';
 import SideMenu from '../../components/SideMenu';
 
@@ -19,8 +19,10 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const [isSideMenuVisible, setIsSideMenuVisible] = useState(false);
   const { user, admin, isAuthenticated, logout } = useAuth();
+  const isWeb = Platform.OS === 'web';
 
   const handleLogout = async () => {
     Alert.alert(
@@ -56,12 +58,29 @@ export default function TabLayout() {
     <>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+          tabBarActiveTintColor: isWeb ? colors.tint : colors.secondary,
+          tabBarInactiveTintColor: isWeb ? colors.tabIconDefault : '#4E4E4E',
           headerShown: useClientOnlyValue(false, true),
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '700',
+            marginBottom: Platform.OS === 'web' ? 0 : 4,
+          },
           tabBarStyle: {
-            height: 60,
-            paddingBottom: 8,
-            paddingTop: 8,
+            height: isWeb ? 60 : 78,
+            paddingBottom: isWeb ? 8 : 14,
+            paddingTop: isWeb ? 8 : 10,
+            backgroundColor: isWeb ? '#FFFFFF' : colors.primary,
+            borderTopLeftRadius: isWeb ? 0 : 28,
+            borderTopRightRadius: isWeb ? 0 : 28,
+            marginHorizontal: isWeb ? 0 : 16,
+            marginBottom: isWeb ? 0 : 12,
+            borderTopWidth: 0,
+            elevation: 10,
+            shadowColor: '#000000',
+            shadowOpacity: 0.1,
+            shadowOffset: { width: 0, height: -4 },
+            shadowRadius: 12,
           },
         }}>
         <Tabs.Screen
@@ -108,24 +127,20 @@ export default function TabLayout() {
                   </TouchableOpacity>
                 </View>
               ) : (
-                <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15, gap: 20 }}
-                >
-                  <TouchableOpacity
-                    onPress={() => router.push('/about' as any)}
-                  >
-                    <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 14, fontWeight: '600' }}>
-                      About Us
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => router.push('/login' as any)}
-                  >
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15, gap: 20 }}>
+                  {isWeb && (
+                    <TouchableOpacity onPress={() => router.push('/about' as any)}>
+                      <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 14, fontWeight: '600' }}>
+                        About Us
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity onPress={() => router.push('/login' as any)}>
                     <Text style={{ color: Colors[colorScheme ?? 'light'].tint, fontSize: 14, fontWeight: '600' }}>
                       Login
                     </Text>
                   </TouchableOpacity>
-                </TouchableOpacity>
+                </View>
               )
             ),
             tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,

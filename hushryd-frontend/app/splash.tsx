@@ -1,47 +1,103 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Animated, Dimensions, Easing, StatusBar, StyleSheet, Text, View } from 'react-native';
 import HushRydLogoImage from '../components/HushRydLogoImage';
-import { FontSizes, Spacing } from '../constants/Design';
+import Colors from '../constants/Colors';
+import { BorderRadius, FontSizes, Spacing } from '../constants/Design';
+import { useColorScheme } from '../components/useColorScheme';
 
 const { width, height } = Dimensions.get('window');
 
 export default function SplashScreen() {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const carAnim = useRef(new Animated.Value(-width * 0.6)).current;
+  const roadAnim = useRef(new Animated.Value(0)).current;
+  const bounceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Start animations
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
+    Animated.loop(
+      Animated.timing(roadAnim, {
         toValue: 1,
-        duration: 1000,
+        duration: 1200,
+        easing: Easing.linear,
         useNativeDriver: true,
       }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 1000,
+      { resetBeforeIteration: true }
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: 1,
+          duration: 400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 0,
+          duration: 400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.sequence([
+      Animated.timing(carAnim, {
+        toValue: width * 0.18,
+        duration: 1400,
+        easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
     ]).start();
 
-    // Navigate to main app after 3 seconds
     const timer = setTimeout(() => {
       router.replace('/(tabs)/');
-    }, 3000);
+    }, 3400);
 
     return () => clearTimeout(timer);
   }, []);
 
+  const roadTranslate = roadAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -120],
+  });
+
+  const bounceTranslate = bounceAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -6],
+  });
+
   return (
     <View style={styles.container}>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+      />
       {/* Background Gradient */}
       <LinearGradient
         colors={['#32CD32', '#228B22', '#006400']}
@@ -63,6 +119,36 @@ export default function SplashScreen() {
           },
         ]}
       >
+        {/* Road with moving car */}
+        <View style={styles.roadSection}>
+          <View style={styles.roadBackground}>
+            <Animated.View
+              style={[
+                styles.roadStripe,
+                {
+                  transform: [{ translateX: roadTranslate }],
+                },
+              ]}
+            />
+          </View>
+          <Animated.View
+            style={[
+              styles.carContainer,
+              {
+                transform: [
+                  { translateX: carAnim },
+                  { translateY: bounceTranslate },
+                ],
+              },
+            ]}
+          >
+            <View style={styles.carBody}>
+              <FontAwesome name="car" size={32} color="#FFFFFF" />
+            </View>
+            <View style={styles.carLight} />
+          </Animated.View>
+        </View>
+
         {/* Logo Container */}
         <View style={styles.logoContainer}>
           <HushRydLogoImage
@@ -73,28 +159,28 @@ export default function SplashScreen() {
         </View>
 
         {/* App Title */}
-        <Text style={styles.appTitle}>HushRyd</Text>
-        <Text style={styles.appSubtitle}>Your Ride, Your Way</Text>
+        <Text style={[styles.appTitle, { color: '#FFFFFF' }]}>HushRyd</Text>
+        <Text style={[styles.appSubtitle, { color: 'rgba(255,255,255,0.9)' }]}>Your Ride, Your Way</Text>
 
         {/* Tagline */}
-        <Text style={styles.tagline}>
+        <Text style={[styles.tagline, { color: 'rgba(255,255,255,0.85)' }]}>
           Travel across AP, Telangana & Karnataka{'\n'}with shared & private rides
         </Text>
 
         {/* Loading Indicator */}
         <View style={styles.loadingContainer}>
           <View style={styles.loadingDots}>
-            <Animated.View style={[styles.dot, { opacity: fadeAnim }]} />
-            <Animated.View style={[styles.dot, { opacity: fadeAnim }]} />
-            <Animated.View style={[styles.dot, { opacity: fadeAnim }]} />
+            <Animated.View style={[styles.dot, { opacity: fadeAnim, backgroundColor: 'rgba(255,255,255,0.6)' }]} />
+            <Animated.View style={[styles.dot, { opacity: fadeAnim, backgroundColor: 'rgba(255,255,255,0.6)' }]} />
+            <Animated.View style={[styles.dot, { opacity: fadeAnim, backgroundColor: 'rgba(255,255,255,0.6)' }]} />
           </View>
         </View>
       </Animated.View>
 
       {/* Bottom Decoration */}
       <View style={styles.bottomDecoration}>
-        <View style={styles.decorativeLine} />
-        <Text style={styles.versionText}>Version 1.0.0</Text>
+        <View style={[styles.decorativeLine, { backgroundColor: 'rgba(255,255,255,0.4)' }]} />
+        <Text style={[styles.versionText, { color: 'rgba(255,255,255,0.7)' }]}>Version 1.0.0</Text>
       </View>
     </View>
   );
@@ -122,6 +208,56 @@ const styles = StyleSheet.create({
   logoContainer: {
     marginBottom: Spacing.large,
     alignItems: 'center',
+  },
+  roadSection: {
+    width: '100%',
+    height: 120,
+    marginBottom: Spacing.large,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  roadBackground: {
+    height: 50,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  roadStripe: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    width: '200%',
+    height: 6,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+  carContainer: {
+    position: 'absolute',
+    bottom: 10,
+    left: 0,
+  },
+  carBody: {
+    width: 80,
+    height: 48,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: '#1E3A8A',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  carLight: {
+    position: 'absolute',
+    right: -18,
+    top: 18,
+    width: 30,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 215, 0, 0.6)',
+    transform: [{ skewX: '-20deg' }],
   },
   appTitle: {
     fontSize: FontSizes.extraLarge * 1.5,

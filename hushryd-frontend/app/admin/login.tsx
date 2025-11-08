@@ -15,6 +15,7 @@ import { useColorScheme } from '../../components/useColorScheme';
 import Colors from '../../constants/Colors';
 import { BorderRadius, FontSizes, Shadows, Spacing } from '../../constants/Design';
 import { useAuth } from '../../contexts/AuthContext';
+import HushRydLogoImage from '../../components/HushRydLogoImage';
 
 export default function AdminLoginScreen() {
   const colorScheme = useColorScheme();
@@ -95,8 +96,7 @@ export default function AdminLoginScreen() {
           <View style={[styles.loginCard, { backgroundColor: colors.card, borderColor: colors.border }, Shadows.large]}>
             {/* Logo Section */}
             <View style={styles.logoSection}>
-              <Text style={styles.logoIcon}>🚗</Text>
-              <Text style={[styles.logoTitle, { color: colors.text }]}>HushRyd</Text>
+              <HushRydLogoImage size="large" shadow={true} />
               <Text style={[styles.logoSubtitle, { color: colors.textSecondary }]}>Admin Portal</Text>
             </View>
 
@@ -230,17 +230,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },
-  logoIcon: {
-    fontSize: FontSizes.xxxl * 1.5,
-    marginBottom: Spacing.small,
-  },
-  logoTitle: {
-    fontSize: FontSizes.xxxl,
-    fontWeight: 'bold',
-    marginBottom: Spacing.tiny,
-  },
   logoSubtitle: {
     fontSize: FontSizes.large,
+    marginTop: Spacing.medium,
   },
   formSection: {
     marginBottom: Spacing.xl,

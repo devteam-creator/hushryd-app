@@ -7,24 +7,32 @@ import TimeslotSection from '@/components/TimeslotSection';
 import { useColorScheme } from '@/components/useColorScheme';
 import Colors from '@/constants/Colors';
 import { BorderRadius, FontSizes, Shadows, Spacing } from '@/constants/Design';
-import { afternoonTimeslots, earlyMorningTimeslots, eveningTimeslots, lateEveningTimeslots, lateMorningTimeslots, morningTimeslots, nightTimeslots, popularTimeslots } from '@/services/mockData';
+import {
+  afternoonTimeslots,
+  earlyMorningTimeslots,
+  eveningTimeslots,
+  lateEveningTimeslots,
+  lateMorningTimeslots,
+  morningTimeslots,
+  nightTimeslots,
+  popularTimeslots,
+} from '@/services/mockData';
 import { SearchParams } from '@/types/models';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
+import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [selectedType, setSelectedType] = useState<'all' | 'carpool' | 'private'>('all');
-  const [selectedTimeslotFilter, setSelectedTimeslotFilter] = useState<'all' | 'early-morning' | 'morning' | 'late-morning' | 'afternoon' | 'evening' | 'late-evening' | 'night'>('all');
+  const [selectedTimeslotFilter, setSelectedTimeslotFilter] = useState<
+    'all' | 'early-morning' | 'morning' | 'late-morning' | 'afternoon' | 'evening' | 'late-evening' | 'night'
+  >('all');
   const [showLiveChat, setShowLiveChat] = useState(false);
 
   const handleSearch = (params: SearchParams) => {
-    console.log('Home screen handleSearch called with:', params);
-    console.log('Selected type:', selectedType);
     router.push({
       pathname: '/search',
       params: { ...params, type: selectedType },
@@ -32,13 +40,10 @@ export default function HomeScreen() {
   };
 
   const handleTimeslotPress = (timeslot: any) => {
-    console.log('Timeslot pressed:', timeslot);
-    // Navigate directly to the ride details page
     router.push(`/ride/${timeslot.rideId}`);
   };
 
   const handleViewAllTimeslots = () => {
-    console.log('View all timeslots pressed');
     router.push({
       pathname: '/search',
       params: {
@@ -72,19 +77,60 @@ export default function HomeScreen() {
     }
   }, [selectedTimeslotFilter]);
 
+  const timeslotTitle = useMemo(() => {
+    switch (selectedTimeslotFilter) {
+      case 'early-morning':
+        return 'Early Morning Rides';
+      case 'morning':
+        return 'Morning Rides';
+      case 'late-morning':
+        return 'Late Morning Rides';
+      case 'afternoon':
+        return 'Afternoon Rides';
+      case 'evening':
+        return 'Evening Rides';
+      case 'late-evening':
+        return 'Late Evening Rides';
+      case 'night':
+        return 'Night Rides';
+      default:
+        return 'Popular Timeslots';
+    }
+  }, [selectedTimeslotFilter]);
+
+  const timeslotSubtitle = useMemo(() => {
+    switch (selectedTimeslotFilter) {
+      case 'early-morning':
+        return 'Early morning departures (4-7 AM)';
+      case 'morning':
+        return 'Morning departures (7-10 AM)';
+      case 'late-morning':
+        return 'Late morning departures (10 AM-1 PM)';
+      case 'afternoon':
+        return 'Afternoon departures (1-4 PM)';
+      case 'evening':
+        return 'Evening departures (4-7 PM)';
+      case 'late-evening':
+        return 'Late evening departures (7-10 PM)';
+      case 'night':
+        return 'Night departures (10 PM-1 AM)';
+      default:
+        return 'Quick book available rides for today';
+    }
+  }, [selectedTimeslotFilter]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView style={styles.scrollView}>
-        {/* Hero Section with Banner */}
+      <ScrollView
+        style={styles.scrollView}
+        contentInsetAdjustmentBehavior="automatic"
+      >
         <HeroBanner />
 
-        {/* Search Card */}
         <View style={[styles.searchCard, { backgroundColor: colors.card }]}>
           <SearchBar onSearch={handleSearch} />
         </View>
 
-        {/* Ride Type Selector */}
         <View style={styles.typeSelectorSection}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>How are you travelling today?</Text>
           <View style={styles.typeButtons}>
@@ -99,9 +145,7 @@ export default function HomeScreen() {
             >
               <Text style={styles.typeIcon}>🚗</Text>
               <Text style={[styles.typeTitle, { color: colors.text }]}>All Rides</Text>
-              <Text style={[styles.typeDescription, { color: colors.textSecondary }]}>
-                Browse all options
-              </Text>
+              <Text style={[styles.typeDescription, { color: colors.textSecondary }]}>Browse all options</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -115,9 +159,7 @@ export default function HomeScreen() {
             >
               <Text style={styles.typeIcon}>🚗</Text>
               <Text style={[styles.typeTitle, { color: colors.text }]}>Carpool</Text>
-              <Text style={[styles.typeDescription, { color: colors.textSecondary }]}>
-                Share the costs
-              </Text>
+              <Text style={[styles.typeDescription, { color: colors.textSecondary }]}>Share the costs</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -131,53 +173,31 @@ export default function HomeScreen() {
             >
               <Text style={styles.typeIcon}>🚙</Text>
               <Text style={[styles.typeTitle, { color: colors.text }]}>Private</Text>
-              <Text style={[styles.typeDescription, { color: colors.textSecondary }]}>
-                Premium rides
-              </Text>
+              <Text style={[styles.typeDescription, { color: colors.textSecondary }]}>Premium rides</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Timeslot Filter */}
         <TimeslotFilter
           selectedFilter={selectedTimeslotFilter}
           onFilterChange={setSelectedTimeslotFilter}
         />
 
-        {/* Filtered Timeslots */}
         <TimeslotSection
-          title={selectedTimeslotFilter === 'all' ? 'Popular Timeslots' : 
-                 selectedTimeslotFilter === 'early-morning' ? 'Early Morning Rides' :
-                 selectedTimeslotFilter === 'morning' ? 'Morning Rides' :
-                 selectedTimeslotFilter === 'late-morning' ? 'Late Morning Rides' :
-                 selectedTimeslotFilter === 'afternoon' ? 'Afternoon Rides' :
-                 selectedTimeslotFilter === 'evening' ? 'Evening Rides' :
-                 selectedTimeslotFilter === 'late-evening' ? 'Late Evening Rides' :
-                 'Night Rides'}
-          subtitle={selectedTimeslotFilter === 'all' ? 'Quick book available rides for today' :
-                   selectedTimeslotFilter === 'early-morning' ? 'Early morning departures (4-7 AM)' :
-                   selectedTimeslotFilter === 'morning' ? 'Morning departures (7-10 AM)' :
-                   selectedTimeslotFilter === 'late-morning' ? 'Late morning departures (10 AM-1 PM)' :
-                   selectedTimeslotFilter === 'afternoon' ? 'Afternoon departures (1-4 PM)' :
-                   selectedTimeslotFilter === 'evening' ? 'Evening departures (4-7 PM)' :
-                   selectedTimeslotFilter === 'late-evening' ? 'Late evening departures (7-10 PM)' :
-                   'Night departures (10 PM-1 AM)'}
+          title={timeslotTitle}
+          subtitle={timeslotSubtitle}
           timeslots={filteredTimeslots.slice(0, 4)}
           onTimeslotPress={handleTimeslotPress}
           onViewAllPress={handleViewAllTimeslots}
         />
 
-        {/* Business Model Section */}
-        <View style={styles.businessSection}>
+        <View style={[styles.businessSection, styles.responsiveHideSection]}>
           <View style={styles.businessHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>How HushRyd Works</Text>
-            <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-              Connecting communities through smart, affordable transportation
-            </Text>
+            <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>Connecting communities through smart, affordable transportation</Text>
           </View>
           
           <View style={styles.businessGrid}>
-            {/* Driver Benefits */}
             <View style={[styles.businessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.businessCardHeader}>
                 <View style={[styles.businessIconContainer, { backgroundColor: colors.primary + '20' }]}>
@@ -186,22 +206,13 @@ export default function HomeScreen() {
                 <Text style={[styles.businessCardTitle, { color: colors.text }]}>For Drivers</Text>
               </View>
               <View style={styles.businessContent}>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Earn money by sharing your ride
-                </Text>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Split fuel costs with passengers
-                </Text>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Flexible scheduling
-                </Text>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Verified passenger profiles
-                </Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Earn money by sharing your ride</Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Split fuel costs with passengers</Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Flexible scheduling</Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Verified passenger profiles</Text>
               </View>
             </View>
 
-            {/* Passenger Benefits */}
             <View style={[styles.businessCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={styles.businessCardHeader}>
                 <View style={[styles.businessIconContainer, { backgroundColor: colors.primary + '20' }]}>
@@ -210,23 +221,14 @@ export default function HomeScreen() {
                 <Text style={[styles.businessCardTitle, { color: colors.text }]}>For Passengers</Text>
               </View>
               <View style={styles.businessContent}>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Affordable travel options
-                </Text>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Safe and verified drivers
-                </Text>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Real-time tracking
-                </Text>
-                <Text style={[styles.businessText, { color: colors.textSecondary }]}>
-                  • Easy booking process
-                </Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Affordable travel options</Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Safe and verified drivers</Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Real-time tracking</Text>
+                <Text style={[styles.businessText, { color: colors.textSecondary }]}>• Easy booking process</Text>
               </View>
             </View>
           </View>
 
-          {/* Business Model Stats */}
           <View style={styles.statsSection}>
             <Text style={[styles.statsTitle, { color: colors.text }]}>Our Impact</Text>
             <View style={styles.statsGrid}>
@@ -249,19 +251,15 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Mission Statement */}
           <View style={[styles.missionCard, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
             <View style={styles.missionContent}>
               <Text style={styles.missionIcon}>🎯</Text>
               <Text style={[styles.missionTitle, { color: colors.text }]}>Our Mission</Text>
-              <Text style={[styles.missionText, { color: colors.textSecondary }]}>
-                To revolutionize inter-city travel in India by providing affordable, safe, and convenient ride-sharing solutions that connect communities and reduce transportation costs for everyone.
-              </Text>
+              <Text style={[styles.missionText, { color: colors.textSecondary }]}>To revolutionize inter-city travel in India by providing affordable, safe, and convenient ride-sharing solutions that connect communities and reduce transportation costs for everyone.</Text>
             </View>
           </View>
         </View>
 
-      {/* Features Section */}
       <View style={styles.featuresSection}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Why choose HushRyd?</Text>
         
@@ -271,9 +269,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.featureContent}>
             <Text style={[styles.featureTitle, { color: colors.text }]}>Your pick of rides at low prices</Text>
-            <Text style={[styles.featureText, { color: colors.textSecondary }]}>
-              No matter where you're going, find the perfect ride from our wide range of destinations and routes at low prices.
-            </Text>
+              <Text style={[styles.featureText, { color: colors.textSecondary }]}>No matter where you're going, find the perfect ride from our wide range of destinations and routes at low prices.</Text>
           </View>
         </View>
 
@@ -283,9 +279,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.featureContent}>
             <Text style={[styles.featureTitle, { color: colors.text }]}>Trust who you travel with</Text>
-            <Text style={[styles.featureText, { color: colors.textSecondary }]}>
-              We check reviews, profiles and IDs, so you know who you're travelling with and can book your ride at ease.
-            </Text>
+              <Text style={[styles.featureText, { color: colors.textSecondary }]}>We check reviews, profiles and IDs, so you know who you're travelling with and can book your ride at ease.</Text>
           </View>
         </View>
 
@@ -295,9 +289,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.featureContent}>
             <Text style={[styles.featureTitle, { color: colors.text }]}>Scroll, click, tap and go!</Text>
-            <Text style={[styles.featureText, { color: colors.textSecondary }]}>
-              Booking a ride has never been easier! Thanks to our simple app, you can book a ride close to you in just minutes.
-            </Text>
+              <Text style={[styles.featureText, { color: colors.textSecondary }]}>Booking a ride has never been easier! Thanks to our simple app, you can book a ride close to you in just minutes.</Text>
           </View>
         </View>
       </View>
@@ -305,12 +297,10 @@ export default function HomeScreen() {
       <View style={styles.bottomPadding} />
     </ScrollView>
     
-    {/* Floating Action Buttons */}
     <View style={styles.sosButtonContainer}>
       <SOSButton variant="floating" />
     </View>
     
-    {/* Live Chat Button */}
     <TouchableOpacity
       style={styles.liveChatButton}
       onPress={() => setShowLiveChat(true)}
@@ -319,7 +309,6 @@ export default function HomeScreen() {
       <Ionicons name="chatbubble" size={32} color="#FFFFFF" />
     </TouchableOpacity>
 
-    {/* Live Chat Modal */}
     <LiveChat visible={showLiveChat} onClose={() => setShowLiveChat(false)} />
     </View>
   );
@@ -373,9 +362,11 @@ const styles = StyleSheet.create({
   typeButtons: {
     flexDirection: 'row',
     gap: Spacing.md,
+    flexWrap: 'wrap',
   },
   typeCard: {
     flex: 1,
+    minWidth: 160,
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 2,
@@ -402,6 +393,9 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     paddingTop: 0,
   },
+  responsiveHideSection: {
+    ...(Platform.OS !== 'web' ? { display: 'none' } : {}),
+  },
   businessHeader: {
     marginBottom: Spacing.lg,
   },
@@ -409,9 +403,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.md,
     marginBottom: Spacing.xl,
+    flexWrap: 'wrap',
   },
   businessCard: {
     flex: 1,
+    minWidth: 250,
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
@@ -459,9 +455,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.md,
+    justifyContent: 'space-between',
   },
   statCard: {
-    width: '48%',
+    flexBasis: '48%',
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
@@ -534,3 +531,4 @@ const styles = StyleSheet.create({
     height: Spacing.xxl,
   },
 });
+
